@@ -5,9 +5,7 @@ on:
     branches: [ hw_api_ci ]
     paths-ignore:
       - '**/README.md'
-      - '**.yaml'
-      - '**.yml'
-      - '**.launch'
+
   pull_request:
     branches: [ hw_api_ci ]
 
