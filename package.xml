@@ -1,10 +1,11 @@
 <package>
 
-  <name>nlopt_ros</name>
+  <name>nlopt</name>
   <version>2.4.2</version>
   <description>nlopt ros wrapper</description>
 
   <maintainer email="stevenj@alum.mit.edu">Steven G. Johnson</maintainer>
+  <maintainer email="tomas.baca@fel.cvut.cz">Tomas Baca</maintainer>
 
   <license>LGPLv3 or later</license>
 
