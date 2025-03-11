@@ -1,19 +1,15 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.12)
 project(nlopt)
-
-find_package(catkin REQUIRED)
 
 include(ExternalProject)
 
 set(VERSION 2.4.2)
 
 file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/include)
-catkin_package(
-    DEPENDS
-    CATKIN_DEPENDS
-    INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include
-    LIBRARIES nlopt_wrap
-)
+
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 
 set(NLOPT_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/nlopt_install)
 set(NLOPT_INSTALL_DIR ${NLOPT_INSTALL_PREFIX}/${CMAKE_INSTALL_PREFIX})
@@ -35,11 +31,33 @@ else()
 endif()
 add_dependencies(nlopt_wrap nlopt_src)
 
-install(TARGETS nlopt_wrap
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
+
+## --------------------------------------------------------------
+## |                           install                          |
+## --------------------------------------------------------------
+
+ament_export_libraries(
+  ${LIBRARIES}
+)
+
+install(TARGETS
+  nlopt_wrap
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY include
+  DESTINATION .
+)
 
 install(DIRECTORY ${NLOPT_INSTALL_DIR}/
   DESTINATION ${CMAKE_INSTALL_PREFIX}
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
+ament_export_include_directories(include)
+
+ament_export_dependencies(${DEPENDENCIES})
+
+ament_package()
