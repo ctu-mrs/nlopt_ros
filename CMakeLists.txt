@@ -11,9 +11,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 
-set(NLOPT_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/nlopt_install)
-set(NLOPT_INSTALL_DIR ${NLOPT_INSTALL_PREFIX}/${CMAKE_INSTALL_PREFIX})
-configure_file(make_install_nlopt.sh.in ${CMAKE_BINARY_DIR}/make_install_nlopt.sh)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
 
 # force the linker to link nlopt even when it is not needed for the wrapper lib
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-no-as-needed")
@@ -23,35 +22,26 @@ ExternalProject_Add(nlopt_src
   PATCH_COMMAND tar -xzf ../nlopt-${VERSION}.tar.gz && rm -rf ../nlopt_src-build/nlopt-${VERSION} && mv nlopt-${VERSION} ../nlopt_src-build/
   CONFIGURE_COMMAND nlopt-${VERSION}/configure --with-cxx --without-matlab --enable-shared --with-pic --prefix=${CMAKE_INSTALL_PREFIX}
   BUILD_COMMAND make
-  INSTALL_COMMAND ${CMAKE_BINARY_DIR}/make_install_nlopt.sh
+  INSTALL_COMMAND make install
 )
 
 set(LIBRARIES
   nlopt_wrap
   )
 
-include_directories(
-  ${CMAKE_INSTALL_PREFIX}/include
-  include
-  )
-
-add_library(nlopt_wrap SHARED
+add_library(nlopt_wrap
   src/wrap_lib.cc
 )
 
-target_link_libraries(nlopt_wrap
-  ${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.so
-)
-
-ament_target_dependencies(nlopt_wrap
-  rclcpp
-  )
+if(APPLE)
+  target_link_libraries(nlopt_wrap -Wl,-all_load ${CMAKE_INSTALL_PREFIX}/lib/libnlopt_cxx.a -Wl,-noall_load)
+else()
+  target_link_libraries(nlopt_wrap -Wl,--whole-archive ${CMAKE_INSTALL_PREFIX}/lib/libnlopt_cxx.a -Wl,--no-whole-archive)
+endif()
 
 add_dependencies(nlopt_wrap
   nlopt_src
 )
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -O3")
 
 ## --------------------------------------------------------------
 ## |                           install                          |
@@ -73,10 +63,6 @@ install(
   DIRECTORY include
   DESTINATION .
   )
-
-install(DIRECTORY ${NLOPT_INSTALL_DIR}/
-  DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
 
 ament_export_include_directories(
   include
