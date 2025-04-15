@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 project(nlopt)
 
 include(ExternalProject)
@@ -27,15 +27,15 @@ set(LIBRARIES
   nlopt_wrap
   )
 
-add_library(nlopt_wrap src/wrap_lib.cc)
-if(APPLE)
-  target_link_libraries(nlopt_wrap -Wl,-all_load ${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.a -Wl,-noall_load)
-else()
-  target_link_libraries(nlopt_wrap -Wl,--whole-archive ${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.a -Wl,--no-whole-archive)
-endif()
+add_library(nlopt_wrap SHARED
+  src/wrap_lib.cc
+)
+
+target_link_libraries(nlopt_wrap -Wl,--whole-archive ${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.a -Wl,--no-whole-archive)
+
 add_dependencies(nlopt_wrap nlopt_src)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -O3")
 
 ## --------------------------------------------------------------
 ## |                           install                          |
