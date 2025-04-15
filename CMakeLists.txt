@@ -5,7 +5,7 @@ include(ExternalProject)
 
 set(VERSION 2.4.2)
 
-file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/include)
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/include)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -22,6 +22,10 @@ ExternalProject_Add(nlopt_src
   BUILD_COMMAND make
   INSTALL_COMMAND ${CMAKE_BINARY_DIR}/make_install_nlopt.sh
 )
+
+set(LIBRARIES
+  nlopt_wrap
+  )
 
 add_library(nlopt_wrap src/wrap_lib.cc)
 if(APPLE)
@@ -42,22 +46,32 @@ ament_export_libraries(
 )
 
 install(TARGETS
-  nlopt_wrap
+  ${LIBRARIES}
+  EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
 
-install(DIRECTORY include
+install(
+  DIRECTORY include
   DESTINATION .
-)
+  )
 
 install(DIRECTORY ${NLOPT_INSTALL_DIR}/
   DESTINATION ${CMAKE_INSTALL_PREFIX}
 )
 
-ament_export_include_directories(include)
+ament_export_include_directories(
+  include
+  )
 
-ament_export_dependencies(${DEPENDENCIES})
+ament_export_targets(
+  export_${PROJECT_NAME} HAS_LIBRARY_TARGET
+  )
+
+ament_export_dependencies(
+  ${DEPENDENCIES}
+  )
 
 ament_package()
