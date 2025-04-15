@@ -14,13 +14,10 @@ find_package(rclcpp_components REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
 
-# force the linker to link nlopt even when it is not needed for the wrapper lib
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-no-as-needed")
-
 ExternalProject_Add(nlopt_src
   DOWNLOAD_COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/nlopt-${VERSION}.tar.gz ./
   PATCH_COMMAND tar -xzf ../nlopt-${VERSION}.tar.gz && rm -rf ../nlopt_src-build/nlopt-${VERSION} && mv nlopt-${VERSION} ../nlopt_src-build/
-  CONFIGURE_COMMAND nlopt-${VERSION}/configure --with-cxx --without-matlab --enable-shared --with-pic --prefix=${CMAKE_INSTALL_PREFIX}
+  CONFIGURE_COMMAND nlopt-${VERSION}/configure --with-cxx --without-matlab --with-pic --prefix=${CMAKE_INSTALL_PREFIX}
   BUILD_COMMAND make
   INSTALL_COMMAND make install
 )
