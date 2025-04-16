@@ -12,8 +12,6 @@ public:
   NloptRos();
 };
 
-nlopt_opt temp;
-
 }  // namespace libcamera_ros
 
 #endif  // NLOPT_ROS_H
