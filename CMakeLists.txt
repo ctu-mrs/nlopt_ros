@@ -7,9 +7,18 @@ set(VERSION 2.4.2)
 
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/include)
 
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_components REQUIRED)
+set(DEPENDENCIES
+    ament_cmake
+    rclcpp
+    rclcpp_components
+  )
+
+foreach(DEP IN LISTS DEPENDENCIES)
+  find_package(${DEP} REQUIRED)
+endforeach()
+
+# force the linker to link libcamera_source even when it is not needed for the wrapper lib
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-no-as-needed")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
 
@@ -20,24 +29,27 @@ configure_file(make_install_nlopt.sh.in ${CMAKE_BINARY_DIR}/make_install_nlopt.s
 ExternalProject_Add(nlopt_src
   DOWNLOAD_COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/nlopt-${VERSION}.tar.gz ./
   PATCH_COMMAND tar -xzf ../nlopt-${VERSION}.tar.gz && rm -rf ../nlopt_src-build/nlopt-${VERSION} && mv nlopt-${VERSION} ../nlopt_src-build/
-  CONFIGURE_COMMAND nlopt-${VERSION}/configure --with-cxx --without-matlab --with-pic --prefix=${CMAKE_INSTALL_PREFIX}
+  CONFIGURE_COMMAND nlopt-${VERSION}/configure --with-cxx --without-matlab --with-pic --enable-shared --prefix=${CMAKE_INSTALL_PREFIX}
   BUILD_COMMAND make
   INSTALL_COMMAND ${CMAKE_BINARY_DIR}/make_install_nlopt.sh
+)
+
+include_directories(
+  include
+  ${NLOPT_INSTALL_DIR}/include
 )
 
 set(LIBRARIES
   nlopt_wrap
   )
 
-add_library(nlopt_wrap
-  src/wrap_lib.cc
+add_library(nlopt_wrap SHARED
+  src/wrap_lib.cpp
 )
 
-if(APPLE)
-  target_link_libraries(nlopt_wrap -Wl,-all_load ${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.a -Wl,-noall_load)
-else()
-  target_link_libraries(nlopt_wrap -Wl,--whole-archive ${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.a -Wl,--no-whole-archive)
-endif()
+target_link_libraries(nlopt_wrap PRIVATE
+  ${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.so
+  )
 
 add_dependencies(nlopt_wrap
   nlopt_src
@@ -64,19 +76,19 @@ install(
   DESTINATION .
   )
 
-# install(
-#   DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib
-#   DESTINATION .
-#   )
+install(
+  DIRECTORY ${NLOPT_INSTALL_DIR}/lib
+  DESTINATION .
+  )
 
-# install(
-#   DIRECTORY ${CMAKE_INSTALL_PREFIX}/include
-#   DESTINATION .
-#   )
+install(
+  DIRECTORY ${NLOPT_INSTALL_DIR}/include
+  DESTINATION .
+  )
 
-install(DIRECTORY ${NLOPT_INSTALL_DIR}/
-  DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
+# install(DIRECTORY ${NLOPT_INSTALL_DIR}/
+#   DESTINATION ${CMAKE_INSTALL_PREFIX}
+# )
 
 ament_export_include_directories(
   include
