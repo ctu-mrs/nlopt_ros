@@ -63,12 +63,12 @@ install(
 
 install(
   DIRECTORY ${CMAKE_INSTALL_PREFIX}/tmp/lib
-  DESTINATION lib
+  DESTINATION .
   )
 
 install(
   DIRECTORY ${CMAKE_INSTALL_PREFIX}/tmp/include
-  DESTINATION include
+  DESTINATION .
   )
 
 ament_export_include_directories(
