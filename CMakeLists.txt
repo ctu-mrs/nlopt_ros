@@ -36,6 +36,7 @@ ExternalProject_Add(nlopt_src
 
 include_directories(
   include
+  include/nlopt_ros
   ${NLOPT_INSTALL_DIR}/include
 )
 
