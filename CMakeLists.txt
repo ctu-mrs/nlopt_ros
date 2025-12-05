@@ -5,22 +5,9 @@ include(ExternalProject)
 
 set(VERSION 2.4.2)
 
+find_package(ament_cmake REQUIRED)
+
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/include)
-
-set(DEPENDENCIES
-    ament_cmake
-    rclcpp
-    rclcpp_components
-  )
-
-foreach(DEP IN LISTS DEPENDENCIES)
-  find_package(${DEP} REQUIRED)
-endforeach()
-
-# force the linker to link libcamera_source even when it is not needed for the wrapper lib
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-no-as-needed")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
 
 set(NLOPT_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/nlopt_install)
 set(NLOPT_INSTALL_DIR ${NLOPT_INSTALL_PREFIX}/${CMAKE_INSTALL_PREFIX})
@@ -34,37 +21,32 @@ ExternalProject_Add(nlopt_src
   INSTALL_COMMAND ${CMAKE_BINARY_DIR}/make_install_nlopt.sh
 )
 
-include_directories(
-  include
-  ${NLOPT_INSTALL_DIR}/include
+add_library(nlopt_nlopt INTERFACE)
+add_library(nlopt::nlopt ALIAS nlopt_nlopt)
+set_target_properties(nlopt_nlopt
+  PROPERTIES
+    EXPORT_NAME nlopt
+    OUTPUT_NAME nlopt
 )
 
-set(LIBRARIES
-  nlopt_wrap
-  )
-
-add_library(nlopt_wrap SHARED
-  src/wrap_lib.cpp
+target_include_directories(nlopt_nlopt
+  INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
-target_link_libraries(nlopt_wrap PRIVATE
-  ${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.so
-  )
-
-add_dependencies(nlopt_wrap
-  nlopt_src
+target_link_libraries(nlopt_nlopt
+  INTERFACE
+    $<BUILD_INTERFACE:${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.so>
+    $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/lib/libnlopt_cxx.so>
 )
 
 ## --------------------------------------------------------------
 ## |                           install                          |
 ## --------------------------------------------------------------
 
-ament_export_libraries(
-  ${LIBRARIES}
-)
-
 install(TARGETS
-  ${LIBRARIES}
+  nlopt_nlopt
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -72,34 +54,17 @@ install(TARGETS
 )
 
 install(
-  DIRECTORY include
-  DESTINATION .
-  )
+  DIRECTORY "${NLOPT_INSTALL_DIR}/lib/"
+  DESTINATION lib
+)
 
 install(
-  DIRECTORY ${NLOPT_INSTALL_DIR}/lib
-  DESTINATION .
-  )
-
-install(
-  DIRECTORY ${NLOPT_INSTALL_DIR}/include
-  DESTINATION .
-  )
-
-# install(DIRECTORY ${NLOPT_INSTALL_DIR}/
-#   DESTINATION ${CMAKE_INSTALL_PREFIX}
-# )
-
-ament_export_include_directories(
-  include
-  )
+  DIRECTORY "${NLOPT_INSTALL_DIR}/include/"
+  DESTINATION "include/${PROJECT_NAME}"
+)
 
 ament_export_targets(
   export_${PROJECT_NAME} HAS_LIBRARY_TARGET
-  )
-
-ament_export_dependencies(
-  ${DEPENDENCIES}
-  )
+)
 
 ament_package()
