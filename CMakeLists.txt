@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(nlopt)
 
 include(ExternalProject)
@@ -10,7 +10,7 @@ find_package(ament_cmake REQUIRED)
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/include)
 
 set(NLOPT_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/nlopt_install)
-set(NLOPT_INSTALL_DIR ${NLOPT_INSTALL_PREFIX}/${CMAKE_INSTALL_PREFIX})
+cmake_path(SET NLOPT_INSTALL_DIR NORMALIZE "${NLOPT_INSTALL_PREFIX}/${CMAKE_INSTALL_PREFIX}")
 configure_file(make_install_nlopt.sh.in ${CMAKE_BINARY_DIR}/make_install_nlopt.sh)
 
 ExternalProject_Add(nlopt_src
