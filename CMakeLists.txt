@@ -13,10 +13,15 @@ set(NLOPT_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/nlopt_install)
 cmake_path(SET NLOPT_INSTALL_DIR NORMALIZE "${NLOPT_INSTALL_PREFIX}/${CMAKE_INSTALL_PREFIX}")
 configure_file(make_install_nlopt.sh.in ${CMAKE_BINARY_DIR}/make_install_nlopt.sh)
 
+set(MAC_LDFLAGS "")
+if(APPLE)
+  set(MAC_LDFLAGS "LDFLAGS=-lc++")
+endif()
+
 ExternalProject_Add(nlopt_src
   DOWNLOAD_COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/nlopt-${VERSION}.tar.gz ./
   PATCH_COMMAND tar -xzf ../nlopt-${VERSION}.tar.gz && rm -rf ../nlopt_src-build/nlopt-${VERSION} && mv nlopt-${VERSION} ../nlopt_src-build/
-  CONFIGURE_COMMAND nlopt-${VERSION}/configure CXXFLAGS=-std=c++14 --with-cxx --without-matlab --with-pic --enable-shared --prefix=${CMAKE_INSTALL_PREFIX}
+  CONFIGURE_COMMAND nlopt-${VERSION}/configure CXXFLAGS=-std=c++14 ${MAC_LDFLAGS} --with-cxx --without-matlab --with-pic --enable-shared --prefix=${CMAKE_INSTALL_PREFIX}
   BUILD_COMMAND make
   INSTALL_COMMAND ${CMAKE_BINARY_DIR}/make_install_nlopt.sh
 )
