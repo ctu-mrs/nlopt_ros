@@ -21,7 +21,7 @@ endif()
 ExternalProject_Add(nlopt_src
   DOWNLOAD_COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/nlopt-${VERSION}.tar.gz ./
   PATCH_COMMAND tar -xzf ../nlopt-${VERSION}.tar.gz && rm -rf ../nlopt_src-build/nlopt-${VERSION} && mv nlopt-${VERSION} ../nlopt_src-build/
-  CONFIGURE_COMMAND nlopt-${VERSION}/configure CXXFLAGS=-std=c++14 ${MAC_LDFLAGS} --with-cxx --without-matlab --with-pic --enable-shared --prefix=${CMAKE_INSTALL_PREFIX}
+  CONFIGURE_COMMAND nlopt-${VERSION}/configure CXXFLAGS=-std=c++14 ${MAC_LDFLAGS} --with-cxx --without-matlab --without-python --without-octave --without-guile --with-pic --enable-shared --prefix=${CMAKE_INSTALL_PREFIX}
   BUILD_COMMAND make
   INSTALL_COMMAND ${CMAKE_BINARY_DIR}/make_install_nlopt.sh
 )
