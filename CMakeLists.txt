@@ -42,8 +42,8 @@ target_include_directories(nlopt_nlopt
 
 target_link_libraries(nlopt_nlopt
   INTERFACE
-    $<BUILD_INTERFACE:${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx.so>
-    $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/lib/libnlopt_cxx.so>
+    $<BUILD_INTERFACE:${NLOPT_INSTALL_DIR}/lib/libnlopt_cxx${CMAKE_SHARED_LIBRARY_SUFFIX}>
+    $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/lib/libnlopt_cxx${CMAKE_SHARED_LIBRARY_SUFFIX}>
 )
 
 ## --------------------------------------------------------------
